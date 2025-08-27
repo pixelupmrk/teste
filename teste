@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PixelUp — Starter ZERO</title>
+  <style>
+    body{margin:0;font-family:system-ui,Arial,sans-serif;background:#0b1520;color:#eaf6ff}
+    .wrap{max-width:820px;margin:48px auto;padding:0 20px}
+    .card{background:#0f2132;border:1px solid #17324a;border-radius:14px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    h1{margin:0 0 6px}
+    .muted{opacity:.8}
+    .row{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+    input,button{padding:10px 12px;border-radius:10px;border:1px solid #17324a;background:#0d1b29;color:#eaf6ff}
+    button{background:#19a5ff;border-color:#19a5ff;color:#00203a;font-weight:700;cursor:pointer}
+    table{width:100%;border-collapse:collapse;margin-top:14px}
+    th,td{padding:10px;border-bottom:1px solid #17324a;text-align:left}
+    .warn{display:none;background:#2b1a00;border:1px solid #5a3b00;color:#ffd699;padding:10px;border-radius:10px;margin-top:10px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>🚀 PixelUp — Starter ZERO</h1>
+      <p class="muted">Deploy está ok. Este starter salva um único campo no <b>localStorage</b> para validar persistência.</p>
+
+      <div id="lsWarn" class="warn">⚠️ Seu navegador bloqueou o localStorage (modo anônimo/privacidade). Os dados não serão salvos.</div>
+
+      <div class="row">
+        <input id="nome" placeholder="Digite seu nome" />
+        <button id="salvar">Salvar</button>
+      </div>
+
+      <table>
+        <thead><tr><th>Nome salvo</th><th>Ação</th></tr></thead>
+        <tbody id="lista"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      // teste localStorage seguro
+      let lsOk = true;
+      try { localStorage.setItem("__t__", "1"); localStorage.removeItem("__t__"); }
+      catch(e){ lsOk = false; document.getElementById('lsWarn').style.display='block'; }
+
+      const KEY = "pixelup_zero_list";
+      const $ = (s)=>document.querySelector(s);
+      const lista = $("#lista");
+      const salvarBtn = $("#salvar");
+
+      let data = [];
+      if(lsOk){
+        try { data = JSON.parse(localStorage.getItem(KEY)) || []; } catch(e){ data = []; }
+      }
+
+      function render(){
+        lista.innerHTML = "";
+        data.forEach((n, i)=>{
+          const tr = document.createElement("tr");
+          tr.innerHTML = "<td>"+escapeHtml(n)+"</td><td><button data-i='"+i+"'>Remover</button></td>";
+          lista.appendChild(tr);
+        });
+        lista.querySelectorAll("button[data-i]").forEach(b=>{
+          b.onclick = () => { data.splice(parseInt(b.dataset.i,10),1); save(); render(); };
+        });
+      }
+      function save(){
+        if(!lsOk) return;
+        try { localStorage.setItem(KEY, JSON.stringify(data)); } catch(e){}
+      }
+      salvarBtn.onclick = ()=>{
+        const nome = ($("#nome").value||"").trim();
+        if(!nome){ alert("Digite um nome"); return; }
+        data.push(nome); $("#nome").value=""; save(); render();
+      };
+      function escapeHtml(s){ return String(s).replace(/[&<>"']/g,(m)=>({"&":"&amp;","<":"&lt;",">":"&gt;",""":"&quot;","'":"&#39;"}[m])); }
+      render();
+    })();
+  </script>
+</body>
+</html>
